@@ -6,49 +6,38 @@ import org.springframework.hateoas.IanaLinkRelations;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
+
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
 
 @RestController
 @RequestMapping("/api/v1/notes")
 class NoteController {
 
-    private final NoteRepository repository;
-    private final NoteModelAssembler assembler;
+    private final NoteService service;
+    private final NoteDTOMapper noteDTOMapper;
 
-    NoteController(NoteRepository repository, NoteModelAssembler assembler) {
-        this.repository = repository;
-        this.assembler = assembler;
+    NoteController(NoteService service, NoteDTOMapper noteDTOMapper) {
+        this.service = service;
+        this.noteDTOMapper = noteDTOMapper;
     }
 
     @GetMapping("/{id}")
-    EntityModel<Note> one(@PathVariable Long id) {
+    Optional<NoteDTO> one(@PathVariable Long id) {
 
-        Note note = repository.findById(id)
-                .orElseThrow(() -> new NoteNotFoundException(id));
-
-        return assembler.toModel(note);
+        return service.findById(id);
     }
 
-    /*@GetMapping("/notes")
-    CollectionModel<EntityModel<Note>> all() {
-
-        List<EntityModel<Note>> notes;
-        notes = Collectors.toList(repository.findAll().forEach((v) -> assembler.toModel(v)));
-
-                /*.stream()
-                .map(assembler::toModel)
-                .collect(Collectors.toList());
-
-        return CollectionModel.of(notes, linkTo(methodOn(NoteController.class).all()).withSelfRel());
-    }*/
-
     @PostMapping
-    ResponseEntity<?> newEmployee(@RequestBody Note newNote) {
+    NoteDTO add(@RequestBody Note newNote) {
 
-        EntityModel<Note> entityModel = assembler.toModel(repository.save(newNote));
+        return service.add(newNote);
+    }
 
-        return ResponseEntity
-                .created(entityModel.getRequiredLink(IanaLinkRelations.SELF).toUri()) //
-                .body(entityModel);
+    @GetMapping("")
+    List<NoteDTO> getNotesByDate(@RequestParam("date") LocalDate date) {
+        return service.findNotesByDate(date);
     }
 }

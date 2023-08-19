@@ -2,6 +2,7 @@ package com.hydrax.backend.user;
 
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -15,7 +16,7 @@ public class UserController {
     }
 
     @GetMapping
-    public Iterable<UserDTO> getUsers() {
+    public List<UserDTO> getUsers() {
         return service.getUsers();
     }
 
